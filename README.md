@@ -1,186 +1,110 @@
-# DeepLabCut
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
+[![Krihelimeter](http://krihelinator.xyz/badge/AlexEMG/DeepLabCut)](http://krihelinator.xyz/repositories/AlexEMG/DeepLabCut)
+[![GitHub stars](https://img.shields.io/github/stars/AlexEMG/DeepLabCut.svg?style=social&label=Star)](https://github.com/AlexEMG/DeepLabCut)
+[![GitHub forks](https://img.shields.io/github/forks/AlexEMG/DeepLabCut.svg?style=social&label=Fork)](https://github.com/AlexEMG/DeepLabCut)
 
-A toolbox for markerless tracking of body parts of animals in lab settings performing various tasks, like [trail tracking](https://vnmurthylab.org/),  [reaching in mice](http://www.mousemotorlab.org/) and various drosophila behaviors (see [Mathis et al.](https://arxiv.org/abs/1804.03142v1) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks or species (the toolbox has also already been successfully applied to rats and zebrafish).  
+## DeepLabCut 
 
-<p align="center">
-<img src="/Documentation/githubfig-01-01.png" width="90%">
-</p>
+DeepLabCut is a toolbox for markerless pose estimation of animals performing various tasks, like [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has also already been successfully applied (by us and others) to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, cheetahs, [mouse whiskers](http://www.mousemotorlab.org/deeplabcut) and [race horses](http://www.mousemotorlab.org/deeplabcut). This work utilizes the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below).
 
-Please see www.mousemotorlab.org/deeplabcut for video demonstrations of automated tracking.
+VERSION 2.0: This is the **python package** of [DeepLabCut](https://www.nature.com/articles/s41593-018-0209-y).
+This package includes graphical user interfaces to label your data, and take you from data set creation to automatic behavioral analysis. It also introduces an active learning framework to efficiently use DeepLabCut on large experimental projects. 
 
-This work utilizes the feature detectors (ResNet + readout layers) of one of the state-of-the-art algorithms for human pose estimation by [Insafutdinov et al.](https://arxiv.org/abs/1605.03170), called DeeperCut, which inspired the name for our toolbox (see references below).
-
-In our preprint we demonstrate that those feature detectors can be trained with few labeled images to achieve excellent tracking accuracy for various body parts in lab tasks. Please check it out:
-
-"[Markerless tracking of user-defined features with deep learning](https://arxiv.org/abs/1804.03142v1)" by Alexander Mathis, Pranav Mamidanna, Taiga Abe, Kevin M. Cury, Venkatesh N. Murthy, Mackenzie W. Mathis* and Matthias Bethge*
-
-# Overview:
-
-A **typical use case** is: 
-
-A user has **videos of an animal (or animals) performing a behavior** and wants to extract the **position of various body parts** from images/video frames. Ideally these parts are visible to a human annotator, yet potentially difficult to extract by standard image processing methods due to changes in background, etc. 
-
-To solve this problem, one can train feature detectors in an end-to-end fashion. In order to do so one should:
-
-  - label points of interests (e.g. joints, snout, etc.) from distinct frames (containing different poses, individuals etc.)
-  - trains a deep neural network while leaving out labeled frames to check if it generalizes well
-  - once the network is trained it can be used to analyze videos in a fast way 
-
-The general pipeline for first time use is:
-
-**Install --> Extract frames -->  Label training data -->  Train DeeperCut feature detectors -->  Apply your trained network to unlabeled data -->  Extract trajectories for analysis.**
+VERSION 1.0: The initial, Nature Neuroscience version of **DeepLabCut** can be found in the history of git, or the latest version here: https://github.com/AlexEMG/DeepLabCut/releases/tag/1.11
 
 <p align="center">
-<img src="/Documentation/deeplabcutFig-01.png" width="70%">
+<img src="docs/images/MATHIS_2018_odortrail.gif" width="36.4%">
+<img src="docs/images/rat-grasp.gif" width="24.95%">
+<img src="docs/images/MATHIS_2018_fly.gif" width="31.5%">
 </p>
 
-# Installation and Requirements:
+Please check out [www.mousemotorlab.org/deeplabcut](https://www.mousemotorlab.org/deeplabcut/) for more video demonstrations of automated tracking. Above: courtesy of the Murthy (mouse), Leventhal (rat), and Axel (fly) labs!
 
-- Hardware:
-     - Computer: For reference, we use Ubuntu 16.04 LTS and run a docker container that has TensorFlow, etc. installed (*available in a future release). One should also be able to run the code in Windows or MacOS (but we never tried). You will need a strong GPU such as the [NVIDIA GeForce 1080 Ti](https://www.nvidia.com/en-us/geforce/products/10series/geforce-gtx-1080/).
-     
-- Software: 
-     - You will need [TensorFlow](https://www.tensorflow.org/) (we used 1.0 for figures in papers, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.4**) for Python 3 with GPU support (otherwise training and running is very slow). Please check your CUDA and [TensorFlow installation](https://www.tensorflow.org/install/) with this line (below), and you can test that your GPU is being properly engaged with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
 
-      $ sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
-
-Please also install:
-
-     - Install Sypder (or equivalent IDE) and/or Jupyter Notebook
-     - Clone (or download) the code we provide
-     - You will also need to install the following Python packages (in the terminal type):
-
-      $ pip install scipy scikit-image matplotlib pyyaml easydict 
-      $ pip install moviepy imageio tqdm tables
-      $ git clone https://github.com/AlexEMG/DeepLabCut.git
-      
-
-# Test the Toolbox installation & code:
-
-- If you want to run the code on our demo video, a mouse reaching video from [Mathis et al., 2017](http://www.cell.com/neuron/fulltext/S0896-6273(17)30157-5), you will NOT run code from sections **(0)**, **(1)**, or **(2)** below, as we have created labels for this video already (and e.g. **(0)** will extract different frames that are thus not labeled). 
-
-- We recommend looking at the first notebooks, then proceed to **(3) Formating the data** below. Also note that this demo data contains so few labeled frames that one should not train the network (other then for brief testing) on the corresponding data set and expect it to work properly - it is only for demo purposes. 
-
-# Using the Toolbox code - Labeling and Training Instructions:
- - The following steps document using the code with either Python scripts or in Jupyter Notebooks:
-
-**(0) Configuration of your project:**
-Open the **"myconfig.py"** file and set the global variables for your dataset. (Demo users, don't edit this if you want to test on the supplied video)
-
-**(1) Selecting data to label:** 
-In the folder "Generating_a_Training_Set", the provided code allows you to select a subset of frames in a video(s) for labeling. Make sure videos you want to use for the training set are in a sub-folder under "Generating_a_Training_Set" or change the video path accordingly in **"myconfig.py"*. 
-
-   - **IDE users:**
-
-     - Open "Step1_SelectRandomFrames_fromVideos.py" and crop videos if behavior of interest only happens in subset of frame (see Step1_SelectRandomFrames_fromVideos.py for detailed instructions; edit in Spyder or your favorite integrated development environment (IDE) an run the script). 
-            
-   - **Juypter Users:** use the Step1_.._demo.ipynb file* - In general, the supplied Jupyter Notebook is helpful to optimize the video cropping step.
-
-Generally speaking, one should create a training set that reflects the diversity of the behavior with respect to postures, animal identities, etc. of the data that will be analyzed. This code randomly selects frames from the videos in a temporally uniformly distributed way. This is fine when the postures vary accordingly. However, the behavior might be sparse (as in the case of reaching, where the reach and pull is very fast and the mouse is not moving much between trials). However, one can extract various example videos of different pulls, then this code will sample the behavior well. One should take this into account when selecting frames to label (i.e. because you can label so little data, be sure your selected frames capture the full breadth of the behavior. You may want to additionally hand select extra frames of interest). 
-            
-**(2) Label the frames:**
-
-   - You should label a sufficient number of frames with the anatomical locations of your choice. For the behaviors we have tested so far, 100-200 frames gave good results (see preprint). Depending on your required accuracy more training data might be necessary. Try to label consistently similar spots (e.g. on wrist that is very large).  
-     
-   - Labeling can be done in any program, but we recommend using [Fiji](https://fiji.sc/). In Fiji one can simply open the images, create a (virtual) stack* (in brief, in fiji: File > Import > Image Sequence > (check "virtual stack")), then use the "Multi-point Tool" to label frames. You scroll through the frames and click on as many points as you wish in the same order on each frame. Then simply measure and save the resulting .csv file (Analyze>Measure (or simple Ctrl+M)). 
-     
-   *To open virtual stack see: https://imagej.nih.gov/ij/plugins/virtual-opener.html  The virtual stack is helpful when the images have different sizes. This way they are not rescaled and the label information does not need to be rescaled.
+# [Installation](docs/installation.md)
+# [Overview of the work-flow and how to use DeepLabCut](docs/UseOverviewGuide.md)
 
 <p align="center">
-<img src="/Documentation/img0000_labels.jpg" width="60%">
+<img src="docs/images/flowfig.png" width="80%">
 </p>
 
-**(3) Formating the data I:**
+# [DEMO the code](/examples) 
+We provide several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the begining on your own data. We also show you how to use the code in Docker, and on Google Colab.
 
-  - **IDE users:**
- The code "Step2_ConvertingLabels2DataFrame.py" creates a data structure in [pandas](https://pandas.pydata.org/) (stored as .h5 and .csv) combining the various labels together with the (local) file path of the images. This data structure also keeps track of who labeled the data and allows to combine data from multiple labelers. Keep in mind that ".csv" files for each bodyparts listed in the myconfig.py file should exist in the folder alongside the individual images.
+# News (and in the news):
 
-   - **Juypter Users:** use the Step2_.._demo.ipynb file
-   
-**(4) Checking the formated data:**
-     
- After this step, you may **check** if the data was loaded correctly and all the labels are properly placed (Use "Step3_CheckLabels.py").
- 
-   - **Juypter Users:** use the Step3_.._demo.ipynb file
+- Nov 2018: Various (post-hoc) analysis scripts contributed by users (and us) will be gathered at [DLCutils](https://github.com/AlexEMG/DLCutils). Feel free to contribute! In particular, there is a script guiding you through 
+importing a project into the new data format for DLC 2.0
+- Oct 2018: new pre-print on the speed video-compression and robustness of DeepLabCut on [BioRxiv](https://www.biorxiv.org/content/early/2018/10/30/457242)
+- Sept 2018: Nature Lab Animal covers DeepLabCut: [Behavior tracking cuts deep](https://www.nature.com/articles/s41684-018-0164-y)
+- Kunlin Wei & Konrad Kording write a very nice News & Views on our paper: [Behavioral Tracking Gets Real](https://www.nature.com/articles/s41593-018-0215-0)
+- August 2018: Our [preprint](https://arxiv.org/abs/1804.03142) appeared in [Nature Neuroscience](https://www.nature.com/articles/s41593-018-0209-y)
+- August 2018: NVIDIA AI Developer News: [AI Enables Markerless Animal Tracking](https://news.developer.nvidia.com/ai-enables-markerless-animal-tracking/)
+- July 2018: Ed Yong covered DeepLabCut and interviewed several users for the [Atlantic](https://www.theatlantic.com/science/archive/2018/07/deeplabcut-tracking-animal-movements/564338). 
+- April 2018: first DeepLabCut preprint on [arXiv.org](https://arxiv.org/abs/1804.03142)
 
-**(5) Formating the data II:** Next split the labeled data into test and train sets for benchmarking ("Step4_GenerateTrainingFileFromLabelledData.py"). This step will create a ".mat" file, which is used by DeeperCut as well as a ".yaml" file containing meta information with regard to the parameters of the DeeperCut. Before this step consider changing the parameters in 'pose_cfg.yaml'.  This file also contains short descriptions of what these parameters mean. Generally speaking pos_dist_thresh and global_scale will be of most importance. Then run the code. This file will create a folder with the training data as well as a folder for training the corresponding model in DeeperCut. 
+# Why use DeepLabCut?
 
-   - **Juypter Users:** use the Step4_.._demo.ipynb file
+- Top left: Due to transfer learning it requires **little training data** for multiple, challenging behaviors (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). 
 
-   - The output will be two folders for train and test data (with their respective yaml files)
+- Top Right: Video anlysis is fast (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 
- **(6) Training the deep neural network:**
-    
-The folder pose-tensorflow contains an earlier, minimal yet sufficient for our purposes variant of [DeeperCut](https://github.com/eldar/pose-tensorflow), which we tested for **TensorFlow 1.0 to 1.4**. Before training a model for the first time you need to download the weights for the [ResNet pretrained on ImageNet from tensorflow.org](https://github.com/tensorflow/models/tree/master/official/resnet) (~200MB). To do that: 
-    
-     $ cd pose-tensorflow/models/pretrained
-     $ ./download.sh
-    
-Next copy the two folders generated in step **(5) Formating the data II** into the **models** folder of pose-tensorflow (i.e. pose-tensorflow/models/). We have already done this for the example project, which you will find there. Then (in a terminal) navigate to the subfolder "train" of the machine file, i.e. in our case and then start training (good luck!)
-    
-     $ cd pose-tensorflow/models/reachingJan30-trainset95shuffle1/train
-     $ TF_CUDNN_USE_AUTOTUNE=0 CUDA_VISIBLE_DEVICES=0 python3 ../../../train.py 
+- Bottom Left: The feature detectors are robust to video compression (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 
-If your machine has multiple GPUs, you can select which GPU you want to run 
-on by setting the environment variable, eg. CUDA_VISIBLE_DEVICES=0.
+- Bottom Right: It allows 3D pose estimation with a single network and camera (see [Mathis/Warren](https://www.biorxiv.org/content/early/2018/10/30/457242) for details)
 
-Tips: You can also stop during a training, and restart from a snapshot (aka checkpoint):
-Just change the init_weights term, i.e. instead of "init_weights: ../../pretrained/resnet_v1_50.ckpt"  put "init_weights: ./snapshot-insertthe#ofstepshere" (i.e. 10000). Train for several thousands of iterations until the loss plateaus. 
+<p align="center">
+<img src="docs/images/ErrorvsTrainingsetSize.png" width="50%">
+<img src="docs/images/inferencespeed.png" width="30%">  
+<img src="docs/images/compressionrobustness.png" width="40%">
+<img src="docs/images/MouseLocomotion_warren.gif" width="30%">
+</p>
 
-**(7) Evaluate your network:**
-     
-In the folder "Evaluation-tools", you will find code to evaluate the performance of the trained network on the whole data set (train and test images).
+## Code contributors:
 
-     $ CUDA_VISIBLE_DEVICES=0 python3 Step1_EvaluateModelonDataset.py #to evaluate your model [needs TensorFlow]
-     $ python3 Step2_AnalysisofResults.py  #to compute test & train errors for your trained model
+[Alexander Mathis](https://github.com/AlexEMG), [Tanmay Nath](http://www.mousemotorlab.org/team), [Mackenzie Mathis](https://github.com/MMathisLab), and especially the authors of DeeperCut authors for the feature detector code. The feature detector code is based on Eldar Insafutdinov's TensorFlow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including Richard Warren, Ronny Eichler, Jonas Rauber, Hao Wu, Taiga Abe, and Jonny Saunders. In particular, the authors thank Ronny Eichler for input on the modularized version. We are also grateful to all the beta testers! 
 
- **(8) Run the trained network on other videos and label videos results**
- 
-After successfully training and finding low generalization error for the network, you can extract labeled points and poses from all videos and plot them above frames. Of course one can use the extracted poses in many other ways.
- 
-   - To begin, first edit the myconfig_analysis.py file 
-     
-   - For extracting posture from a folder with videos run ("CUDA_VISIBLE_DEVICES=0 python3 AnalyzeVideos.py") and then make labeled videos ("MakingLabeledVideo.py").
+This is an actively developed package and we welcome community development and involvement! If you would like to join the [DeepLabCut Slack group](https://deeplabcut.slack.com), please drop us a note to be invited by emailing: mackenzie@post.harvard.edu
 
-# Contribute:
+Please check out the following references for more details:
 
-- Issue Tracker: https://github.com/AlexEMG/DeepLabCut/issues
-- Source Code: https://github.com/AlexEMG/DeepLabCut
+## References:
 
-# Support:
-
-If you are having issues, please let us know ([Issue Tracker](https://github.com/AlexEMG/DeepLabCut/issues)). 
-For questions feel free to reach out to: [alexander.mathis@bethgelab.org] or [mackenzie@post.harvard.edu]
-
-# Code contributors:
-
-[Alexander Mathis](https://github.com/AlexEMG), [Mackenzie Mathis](https://github.com/MMathisLab),and the DeeperCut authors for the feature detector code. Edits by [Jonas Rauber](https://github.com/jonasrauber) and [Taiga Abe](https://github.com/cellistigs). The feature detector code is based on Eldar Insafutdinov's tensorflow implementation of [DeeperCut](https://github.com/eldar/pose-tensorflow). Please check out the following references for details:
-
-
-# References:
-
-    @inproceedings{insafutdinov2017cvpr,
-	    title = {ArtTrack: Articulated Multi-person Tracking in the Wild},
-	    booktitle = {CVPR'17},
-	    url = {http://arxiv.org/abs/1612.01465},
-	    author = {Eldar Insafutdinov and Mykhaylo Andriluka and Leonid Pishchulin and Siyu Tang and Evgeny Levinkov and Bjoern Andres and Bernt Schiele}
+    @article{Mathisetal2018,
+        title={DeepLabCut: markerless pose estimation of user-defined body parts with deep learning},
+        author = {Alexander Mathis and Pranav Mamidanna and Kevin M. Cury and Taiga Abe  and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
+        journal={Nature Neuroscience},
+        year={2018},
+        url={https://www.nature.com/articles/s41593-018-0209-y}
     }
-
+    
     @article{insafutdinov2016eccv,
         title = {DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model},
-	    booktitle = {ECCV'16},
-        url = {http://arxiv.org/abs/1605.03170},
-        author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele}
+        author = {Eldar Insafutdinov and Leonid Pishchulin and Bjoern Andres and Mykhaylo Andriluka and Bernt Schiele},
+        booktitle = {ECCV'16},
+        url = {http://arxiv.org/abs/1605.03170}
     }
     
-    @misc{1804.03142,
-	Author = {Alexander Mathis and Pranav Mamidanna and Taiga Abe and Kevin M. Cury and Venkatesh N. Murthy and Mackenzie W. Mathis and Matthias Bethge},
-	Title = {Markerless tracking of user-defined features with deep learning},
-	Year = {2018},
-	Eprint = {arXiv:1804.03142},
-	}
+Our open source pre-prints:
+    
+    @article{mathis2018markerless,
+        title={Markerless tracking of user-defined features with deep learning},
+        author={Mathis, Alexander and Mamidanna, Pranav and Abe, Taiga and Cury, Kevin M and Murthy, Venkatesh N and Mathis, Mackenzie W and Bethge, Matthias},
+        journal={arXiv preprint arXiv:1804.03142},
+        year={2018}
+    }
+    
+    @article {MathisWarren2018speed,
+        author = {Mathis, Alexander and Warren, Richard A.},
+        title = {On the inference speed and video-compression robustness of DeepLabCut},
+        year = {2018},
+        doi = {10.1101/457242},
+        publisher = {Cold Spring Harbor Laboratory},
+        URL = {https://www.biorxiv.org/content/early/2018/10/30/457242},
+        eprint = {https://www.biorxiv.org/content/early/2018/10/30/457242.full.pdf},
+        journal = {bioRxiv}
+    }
 
-# License:
+## License:
 
-This project is licensed under the GNU Lesser General Public License v3.0.
-
+This project is licensed under the GNU Lesser General Public License v3.0. Note that the software is provided "as is", without warranty of any kind, express or implied. If you use this code, please [cite us!](https://www.nature.com/articles/s41593-018-0209-y).
